@@ -15,7 +15,8 @@ export const createRoom = async (
   try {
     const user = req.user;
     const room_id = Math.random().toString(36).slice(2);
-    const newRoom = await roomService.createRoom(user.id, room_id);
+    const room_name = req.body.roomName
+    const newRoom = await roomService.createRoom(user.id, room_id, room_name);
     res.status(StatusCodes.OK).json(new Success(newRoom));
   } catch (error) {
     next(error);

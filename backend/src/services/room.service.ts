@@ -19,8 +19,9 @@ dotenv.config();
 
 // Create a new room
 export const createRoom = async (
-  user_id,
-  room_id,
+  user_id: string,
+  room_id: string,
+  room_name: string,
   emptyTimeout: number = 60,
   maxParticipants: number = 20
 ) => {
@@ -33,6 +34,7 @@ export const createRoom = async (
   const newRoom = await roomRepo.create({
     user_id: user_id,
     friendly_id: room_id,
+    room_name: room_name,
   });
 
   if (!newRoom)

@@ -12,6 +12,9 @@ export class Room {
   id: string;
 
   @Column()
+  room_name: string;
+
+  @Column()
   user_id: string;
 
   @Column({ nullable: false })
