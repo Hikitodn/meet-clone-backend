@@ -15,7 +15,7 @@ export const createRoom = async (
   try {
     const user = req.user;
     const room_id = Math.random().toString(36).slice(2);
-    const room_name = req.body.roomName
+    const room_name = req.body.roomName;
     const newRoom = await roomService.createRoom(user.id, room_id, room_name);
     res.status(StatusCodes.OK).json(new Success(newRoom));
   } catch (error) {
@@ -30,7 +30,7 @@ export const getToken = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const room_id = req.body.roomName;
+    const { room_id } = req.params;
     const user_id = req.user.id;
     const user_name = req.user.name;
 
@@ -49,7 +49,7 @@ export const reqJoinRoom = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const room_id = req.params.room_id;
+    const { room_id } = req.params;
     const { user_id, user_name } = req.user;
 
     const result = await roomService.reqJoinRoom(user_id, user_name, room_id);

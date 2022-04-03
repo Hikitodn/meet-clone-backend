@@ -5,9 +5,9 @@ const roomRouter = Router();
 
 // // all: "./api/room"
 roomRouter.use("/*", authController.verifyUser);
-roomRouter.post("/get-token", roomController.getToken);
+roomRouter.get("/get-token/:room_id", roomController.getToken);
 roomRouter.post("/create-room", roomController.createRoom);
-roomRouter.get("/req-join-room/:roomId", roomController.reqJoinRoom);
+roomRouter.get("/req-join-room/:room_id", roomController.reqJoinRoom);
 roomRouter.post("/res-join-room", roomController.resJoinRoom);
 // roomRouter.get("/update-participant", roomController.);
 roomRouter.get("/list-room", roomController.listRooms);
