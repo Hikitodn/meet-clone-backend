@@ -1,4 +1,4 @@
-version: "3"
+version: "3.9"
 
 networks:
   back-end:
@@ -46,18 +46,28 @@ services:
       - db
       - livekit
 
-  # livekit:
-  #   container_name: livekit
-  #   image: "livekit/livekit-server:latest"
-  #   hostname: localhost
+  # caddy:
+  #   image: livekit/caddyl4
+  #   command: run --config /etc/caddy.yaml --adapter yaml
   #   restart: unless-stopped
-  #   ports:
-  #     - "7880:7880"
-  #     - "7881:7881"
-  #     - "7882:7882/udp"
+  #   network_mode: "host"
   #   volumes:
-  #     - ./backend/livekit.meet-clone/livekit.yaml:/etc/livekit.yaml
-  #   command: --config /etc/livekit.yaml
-  #   network_mode: host
-  #   depends_on:
-  #     - db
+  #     - ./livekit.meetClone.com/caddy.yaml:/etc/caddy.yaml
+  #     - ./livekit.meetClone.com/caddy_data:/data
+
+  livekit:
+    container_name: livekit
+    image: livekit/livekit-server:latest
+    command: --config /etc/livekit.yaml
+    restart: unless-stopped
+    # network_mode: "host"
+    volumes:
+      - ./livekit.meetClone.com/livekit.yaml:/etc/livekit.yaml
+    networks:
+      - back-end
+  # redis:
+  #   image: redis:6-alpine
+  #   command: redis-server /etc/redis.conf
+  #   network_mode: "host"
+  #   volumes:
+  #     - ./livekit.meetClone.com/redis.conf:/etc/redis.conf
