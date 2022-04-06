@@ -34,12 +34,6 @@ services:
     ports:
       - "8080:8080"
     restart: always
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_HOST=db-postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=postgres
     networks:
       - back-end
     depends_on:
@@ -52,8 +46,8 @@ services:
   #   restart: unless-stopped
   #   network_mode: "host"
   #   volumes:
-  #     - ./livekit.meetClone.com/caddy.yaml:/etc/caddy.yaml
-  #     - ./livekit.meetClone.com/caddy_data:/data
+  #     - ./livekit/caddy.yaml:/etc/caddy.yaml
+  #     - ./livekit/caddy_data:/data
 
   livekit:
     container_name: livekit
@@ -62,12 +56,13 @@ services:
     restart: unless-stopped
     # network_mode: "host"
     volumes:
-      - ./livekit.meetClone.com/livekit.yaml:/etc/livekit.yaml
+      - ./livekit/livekit.yaml:/etc/livekit.yaml
     networks:
       - back-end
+
   # redis:
   #   image: redis:6-alpine
   #   command: redis-server /etc/redis.conf
   #   network_mode: "host"
   #   volumes:
-  #     - ./livekit.meetClone.com/redis.conf:/etc/redis.conf
+  #     - ./livekit/redis.conf:/etc/redis.conf

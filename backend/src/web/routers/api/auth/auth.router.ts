@@ -10,5 +10,6 @@ authRouter.get("/verify", authController.verifyUser, (req: Request, res) => {
     data: req.user,
   });
 });
+authRouter.get("/logout", authController.logout);
 
 export default authRouter;

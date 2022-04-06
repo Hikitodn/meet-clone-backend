@@ -14,8 +14,8 @@ export const createRoom = async (
 ): Promise<void> => {
   try {
     const user = req.user;
-    const room_id = Math.random().toString(36).slice(2);
-    const room_name = req.body.roomName;
+    const room_id = Math.random().toString(36).slice(2, 8);
+    const room_name = req.body.room_name;
     const newRoom = await roomService.createRoom(user.id, room_id, room_name);
     res.status(StatusCodes.OK).json(new Success(newRoom));
   } catch (error) {
@@ -122,8 +122,8 @@ export const listRooms = async (
   next: NextFunction
 ) => {
   try {
-    const uid = req.user.uid;
-    const listRooms = await roomService.listRooms(uid);
+    const user_id = req.user.id;
+    const listRooms = await roomService.listRooms(user_id);
     res.status(StatusCodes.OK).json(new Success(listRooms));
   } catch (error) {
     next(error);

@@ -240,15 +240,19 @@ export const listRooms = async (user_id: string) => {
 
   const listRooms = await svc.listRooms();
 
-  const rooms = await async
+  const rooms = [];
+
+  await async
     .filter(listRooms, async (room, callback) => {
       const yourRoom = await roomRepo.findOneBy({
         friendly_id: room.name,
         user_id: user_id,
       });
       if (yourRoom) {
-        callback(null, true);
+        await rooms.push(yourRoom);
+        return callback(null, true);
       }
+      return callback(null, false);
     })
     .then(async (result) => {
       return result;

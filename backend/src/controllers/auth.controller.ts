@@ -22,9 +22,9 @@ export const loginWithGoogle = async (
   next: NextFunction
 ) => {
   try {
-    const idToken = req.body.idToken.toString();
+    const id_token = req.body.id_token.toString();
 
-    const user = await authService.verifyUserWithGoogle(idToken);
+    const user = await authService.verifyUserWithGoogle(id_token);
 
     req.session.user_id = user.id;
 
@@ -54,6 +54,19 @@ export const verifyUser = async (
 
     req.user = user;
     next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    req.user = null;
+    res.status(StatusCodes.OK).json(new Success(true));
   } catch (error) {
     next(error);
   }
