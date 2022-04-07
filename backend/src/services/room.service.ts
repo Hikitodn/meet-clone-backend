@@ -260,7 +260,11 @@ export const listRooms = async (user_id: string) => {
     .then(async (result) => {
       return result;
     });
-  return rooms;
+  return rooms.sort((a, b) => {
+    const date_a = new Date(a.updated_at);
+    const date_b = new Date(b.updated_at);
+    return date_b.getTime() < date_a.getTime() ? -1 : 1;
+  });
 };
 
 // delete a room
@@ -289,5 +293,5 @@ export const deleteRoom = async (user_id: string, room_id: string) => {
       "you are not master"
     );
 
-  return await svc.deleteRoom(room_id);
+  return await svc.deleteRoom(room.sid);
 };

@@ -66,7 +66,7 @@ export const logout = async (
 ) => {
   try {
     req.user = null;
-    req.session = null;
+    req.session.user_id = null;
     res.status(StatusCodes.OK).json(new Success(true));
   } catch (error) {
     next(error);
