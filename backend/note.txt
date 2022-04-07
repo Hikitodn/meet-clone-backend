@@ -1,1 +1,1 @@
-docker run --rm -p 7880:7880 -p 7881:7881 -p 7882:7882/udp -v /c/Users/"This PC"/Desktop/google-meet-clone-backend/backend/livekit.yaml:/livekit.yaml livekit/livekit-server --config /livekit.yaml --node-ip 127.0.0.1
+docker run --rm -p 7880:7880 -p 7881:7881 -p 7882:7882/udp -v C:\Users\'This PC'\Desktop\meet_clone\backend-meet\livekit\livekit.yaml:/livekit.yaml livekit/livekit-server --config /livekit.yaml --node-ip 127.0.0.1

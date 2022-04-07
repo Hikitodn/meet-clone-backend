@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
-import { StatusCodes } from "http-status-codes";
+import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { roomService } from "../services";
-import { Success } from "../lib/api/apiControllerBase";
+import { Success, APIError } from "../lib/api/apiControllerBase";
 
 dotenv.config();
 
@@ -16,6 +16,10 @@ export const createRoom = async (
     const user = req.user;
     const room_id = Math.random().toString(36).slice(2, 8);
     const room_name = req.body.room_name;
+
+    if (!room_name || !user)
+      throw new APIError(ReasonPhrases.BAD_REQUEST, StatusCodes.BAD_REQUEST);
+
     const newRoom = await roomService.createRoom(user.id, room_id, room_name);
     res.status(StatusCodes.OK).json(new Success(newRoom));
   } catch (error) {
@@ -34,6 +38,9 @@ export const getToken = async (
     const user_id = req.user.id;
     const user_name = req.user.name;
 
+    if (!room_id)
+      throw new APIError(ReasonPhrases.BAD_REQUEST, StatusCodes.BAD_REQUEST);
+
     const token = await roomService.createToken(user_id, user_name, room_id);
 
     res.status(StatusCodes.OK).json(new Success(token));
@@ -51,6 +58,9 @@ export const reqJoinRoom = async (
   try {
     const { room_id } = req.params;
     const { user_id, user_name } = req.user;
+
+    if (!room_id)
+      throw new APIError(ReasonPhrases.BAD_REQUEST, StatusCodes.BAD_REQUEST);
 
     const result = await roomService.reqJoinRoom(user_id, user_name, room_id);
 
@@ -72,30 +82,15 @@ export const resJoinRoom = async (
     const participantId = req.body.participantId;
     const isAllow = req.body.isAllow;
 
+    if (!roomMasterId || !roomId || !participantId || !isAllow)
+      throw new APIError(ReasonPhrases.BAD_REQUEST, StatusCodes.BAD_REQUEST);
+
     const result = await roomService.resJoinRoom(
       roomId,
       roomMasterId,
       participantId,
       isAllow
     );
-
-    res.status(StatusCodes.OK).json(new Success(result));
-  } catch (error) {
-    next(error);
-  }
-};
-
-// check participant
-export const checkParticipant = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const roomId = req.params.roomName;
-    const participantId = req.user.uid;
-
-    const result = await roomService.isParticipantOfRoom(roomId, participantId);
 
     res.status(StatusCodes.OK).json(new Success(result));
   } catch (error) {
@@ -125,6 +120,66 @@ export const listRooms = async (
     const user_id = req.user.id;
     const listRooms = await roomService.listRooms(user_id);
     res.status(StatusCodes.OK).json(new Success(listRooms));
+  } catch (error) {
+    next(error);
+  }
+};
+
+// check participant
+export const isParticipantOfRoom = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const room_id = req.params.room_id;
+    const user_id = req.user.id;
+
+    if (!room_id || !user_id)
+      throw new APIError(ReasonPhrases.BAD_REQUEST, StatusCodes.BAD_REQUEST);
+
+    const result = await roomService.isParticipantOfRoom(user_id, room_id);
+    res.status(StatusCodes.OK).json(new Success(result));
+  } catch (error) {
+    next(error);
+  }
+};
+
+// check room master
+export const isRoomMaster = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const room_id = req.params.room_id;
+    const user_id = req.user.id;
+
+    if (!room_id || !user_id)
+      throw new APIError(ReasonPhrases.BAD_REQUEST, StatusCodes.BAD_REQUEST);
+
+    const result = await roomService.isRoomMaster(user_id, room_id);
+    res.status(StatusCodes.OK).json(new Success(result));
+  } catch (error) {
+    next(error);
+  }
+};
+
+// delete room
+export const deleteRoom = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const room_id = req.params.room_id;
+    const user_id = req.user.id;
+
+    if (!room_id || !user_id)
+      throw new APIError(ReasonPhrases.BAD_REQUEST, StatusCodes.BAD_REQUEST);
+
+    const result = await roomService.deleteRoom(user_id, room_id);
+    res.status(StatusCodes.OK).json(new Success(result));
   } catch (error) {
     next(error);
   }

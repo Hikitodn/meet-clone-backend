@@ -162,7 +162,7 @@ export const resJoinRoom = async (
   user_id: string,
   participant_id: string,
   room_id: string,
-  isAllow: boolean
+  is_allow: boolean
 ) => {
   const svc = await new RoomServiceClient(
     process.env.LIVEKIT_API_HOST,
@@ -179,12 +179,6 @@ export const resJoinRoom = async (
       "you are not master"
     );
 
-  const participant = await participantRepo.create({
-    user_id: participant_id,
-    room_id: room_id,
-  });
-  await participantRepo.save(participant);
-
   const participantDetail = await userRepo.findOneBy({
     id: participant_id,
   });
@@ -192,7 +186,15 @@ export const resJoinRoom = async (
   const roomOfParticipant = await svc.getParticipant(room_id, participant_id);
   const sidParticipant = roomOfParticipant.sid;
 
-  const dataRes = isAllow
+  if (is_allow) {
+    const participant = await participantRepo.create({
+      user_id: participant_id,
+      room_id: room_id,
+    });
+    await participantRepo.save(participant);
+  }
+
+  const dataRes = is_allow
     ? {
         token: await createToken(
           participant_id,
@@ -231,6 +233,7 @@ export const resJoinRoom = async (
 //   }
 // };
 
+// List room
 export const listRooms = async (user_id: string) => {
   const svc = await new RoomServiceClient(
     process.env.LIVEKIT_API_HOST,
@@ -258,4 +261,33 @@ export const listRooms = async (user_id: string) => {
       return result;
     });
   return rooms;
+};
+
+// delete a room
+export const deleteRoom = async (user_id: string, room_id: string) => {
+  const svc = await new RoomServiceClient(
+    process.env.LIVEKIT_API_HOST,
+    process.env.LIVEKIT_CLIENT_ID,
+    process.env.LIVEKIT_CLIENT_SECRET
+  );
+
+  const listRooms = await svc.listRooms();
+
+  const room = listRooms.find((room) => {
+    console.log(room.name === room_id ? true : false);
+    return room.name === room_id ? true : false;
+  });
+
+  if (!room) throw new APIError(ReasonPhrases.NOT_FOUND, StatusCodes.NOT_FOUND);
+
+  const isMaster = await isRoomMaster(user_id, room_id);
+
+  if (!isMaster)
+    throw new APIError(
+      ReasonPhrases.BAD_REQUEST,
+      StatusCodes.BAD_REQUEST,
+      "you are not master"
+    );
+
+  return await svc.deleteRoom(room_id);
 };
