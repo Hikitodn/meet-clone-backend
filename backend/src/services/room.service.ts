@@ -313,3 +313,20 @@ export const listParticipants = async (user_id: string, room_id: string) => {
 
   return participants;
 };
+
+export const exitsRoom = async (roomId: string) => {
+  const svc = new RoomServiceClient(
+    process.env.LIVEKIT_API_HOST,
+    process.env.LIVEKIT_CLIENT_ID,
+    process.env.LIVEKIT_CLIENT_SECRET
+  );
+
+  const listRooms = await svc.listRooms();
+
+  const room = listRooms.find((room) => {
+    return room.name === roomId ? true : false;
+  });
+
+  if (!room) return false;
+  return true;
+};

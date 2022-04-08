@@ -208,3 +208,21 @@ export const listParticipants = async (
     next(error);
   }
 };
+
+export const exitsRoom = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const room_id = req.params.room_id;
+
+    if (!room_id)
+      throw new APIError(ReasonPhrases.BAD_REQUEST, StatusCodes.BAD_REQUEST);
+
+    const result = await roomService.exitsRoom(room_id);
+    res.status(StatusCodes.OK).json(new Success(result));
+  } catch (error) {
+    next(error);
+  }
+};
