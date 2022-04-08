@@ -295,3 +295,21 @@ export const deleteRoom = async (user_id: string, room_id: string) => {
 
   return await svc.deleteRoom(room.sid);
 };
+
+// list participants in a room
+export const listParticipants = async (user_id: string, room_id: string) => {
+  const master = await isRoomMaster(user_id, room_id);
+  if (!master) {
+    throw new APIError(
+      ReasonPhrases.BAD_REQUEST,
+      StatusCodes.BAD_REQUEST,
+      "you are not master"
+    );
+  }
+
+  const participants = await participantRepo.findBy({
+    room_id: room_id,
+  });
+
+  return participants;
+};

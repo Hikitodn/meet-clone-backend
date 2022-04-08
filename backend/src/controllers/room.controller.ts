@@ -184,3 +184,27 @@ export const deleteRoom = async (
     next(error);
   }
 };
+
+// list participants in the room
+export const listParticipants = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const room_id = req.params.room_id;
+    const user_id = req.user.id;
+
+    if (!room_id || !user_id)
+      throw new APIError(ReasonPhrases.BAD_REQUEST, StatusCodes.BAD_REQUEST);
+
+    const listParticipants = await roomService.listParticipants(
+      user_id,
+      room_id
+    );
+
+    res.status(StatusCodes.OK).json(new Success(listParticipants));
+  } catch (error) {
+    next(error);
+  }
+};
