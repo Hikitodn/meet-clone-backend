@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { FirebaseModule } from './firebase/firebase.module';
 import { UsersModule } from './users/users.module';
 import { DatabaseModule } from './database/database.module';
@@ -11,7 +9,7 @@ import { RoomsModule } from './rooms/rooms.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env.development',
+      envFilePath: '.env',
     }),
     FirebaseModule,
     UsersModule,
@@ -19,7 +17,7 @@ import { RoomsModule } from './rooms/rooms.module';
     AuthModule,
     RoomsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

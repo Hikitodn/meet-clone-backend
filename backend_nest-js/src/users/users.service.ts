@@ -31,12 +31,8 @@ export class UsersService {
     return await this.usersRepository.save(findByEmailOrCreateUserDto);
   }
 
-  async findAll() {
-    return await this.usersRepository.find();
-  }
-
-  async findOne(id: string) {
-    return await this.usersRepository.findOne(id);
+  async findById(id: string) {
+    return await this.usersRepository.findOne({ where: { id } });
   }
 
   async findByEmail(email: string) {

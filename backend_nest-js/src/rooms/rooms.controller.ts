@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+} from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { User } from 'src/common/decorators/user.decorator';
 
 @Controller('rooms')
 export class RoomsController {
@@ -13,22 +23,23 @@ export class RoomsController {
   }
 
   @Get()
-  findAll() {
+  findAll(@User() user) {
+    console.log(user);
     return this.roomsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.roomsService.findOne(+id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.roomsService.findOne(+id);
+  // }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {
-    return this.roomsService.update(+id, updateRoomDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {
+  //   return this.roomsService.update(+id, updateRoomDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.roomsService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.roomsService.remove(+id);
+  // }
 }
