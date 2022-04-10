@@ -41,9 +41,13 @@ export class AuthController {
     return user;
   }
 
-  @Get('/verify/:id')
-  async validateById(@Param('id') id: string) {
-    return await this.authService.validateById(id).catch(() => {
+  @Get('/verify')
+  async validateById(@Req() req: Request) {
+    const uid = req.session.uid;
+
+    if (!uid) throw new UnauthorizedException('Invalid user');
+
+    return await this.authService.validateById(uid).catch(() => {
       throw new UnauthorizedException('Invalid user');
     });
   }
