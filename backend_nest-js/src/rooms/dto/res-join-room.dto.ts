@@ -1,6 +1,11 @@
+import { IsNotEmpty } from 'class-validator';
+
 export class ResJoinRoomDto {
   user_id: string;
-  participant_id: string;
   friendly_id: string;
-  allow_join: boolean;
+
+  @IsNotEmpty()
+  participant_id: string;
+
+  is_allow: string;
 }

@@ -1,13 +1,13 @@
 //Import package
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import async from 'async';
+import { In, Repository } from 'typeorm';
 //Import dto
 import { CreateRoomDto } from './dto/create-room.dto';
-import { GetRoomMasterDto } from './dto/get-room-master.dto';
-import { IsRoomMasterDto } from './dto/is-room-master.dto';
-import { IsRoomParticipantDto } from './dto/is-room-participant.dto';
 import { CreateTokenDto } from './dto/create-token.dto';
 import { ReqJoinRoomDto } from './dto/req-join-room.dto';
 import { ResJoinRoomDto } from './dto/res-join-room.dto';
@@ -37,7 +37,7 @@ export class RoomsService {
     return arr.join('');
   }
 
-  async create(createRoomDto: CreateRoomDto): Promise<Room> {
+  async createRoom(createRoomDto: CreateRoomDto): Promise<Room> {
     const newRoom = await this.roomRepository.create({
       user_id: createRoomDto.user_id,
       room_name: createRoomDto.room_name,
@@ -48,49 +48,23 @@ export class RoomsService {
 
     await this.livekitService.getSVC().createRoom({
       name: createRoomDto.friendly_id,
-      emptyTimeout: createRoomDto.emptyTimeout,
-      maxParticipants: createRoomDto.maxParticipants,
+      emptyTimeout: createRoomDto.empty_timeout,
+      maxParticipants: createRoomDto.max_participants,
     });
 
     return this.roomRepository.save(newRoom);
   }
 
-  async isRoomMaster(
-    isRoomMasterDto: IsRoomMasterDto,
-  ): Promise<Room | undefined> {
-    const room = await this.roomRepository.findOne({
-      where: {
-        user_id: isRoomMasterDto.user_id,
-        friendly_id: isRoomMasterDto.friendly_id,
-      },
-    });
-    if (!room) return undefined;
-    return room;
-  }
+  async getRoom(friendly_id: string) {
+    const roomLivekit = await this.livekitService
+      .getSVC()
+      .listRooms([friendly_id]);
 
-  async isParticipantOfRoom(
-    isRoomParticipantDto: IsRoomParticipantDto,
-  ): Promise<Room | undefined> {
-    const participant = await this.participantRepository.findOne({
-      where: {
-        user_id: isRoomParticipantDto.user_id,
-        room_id: isRoomParticipantDto.friendly_id,
-      },
-    });
+    if (!roomLivekit) throw new BadRequestException('Room not found');
 
-    const room = await this.roomRepository.findOne(participant.room_id);
-    if (!room) return undefined;
-    return room;
-  }
-
-  async roomExists(friendly_id: string): Promise<Room | undefined> {
-    const room = await this.roomRepository.findOne({
-      where: {
-        friendly_id: friendly_id,
-      },
+    return await this.roomRepository.findOne({
+      where: { friendly_id },
     });
-    if (!room) return undefined;
-    return room;
   }
 
   async createToken(createTokenDto: CreateTokenDto): Promise<string> {
@@ -109,19 +83,15 @@ export class RoomsService {
 
   async listRooms(user_id: string): Promise<Room[]> {
     const svc = await this.livekitService.getSVC();
-    const roomRepo = this.roomRepository;
-    const rooms = (await svc.listRooms()) || [];
 
-    const listRoomsResult = [];
+    const roomsIsOnline = (await svc.listRooms()) || [];
+    const rooms = await roomsIsOnline.map((room) => room.name);
 
-    await async.filter(rooms, async (room) => {
-      const roomCurrent = await roomRepo.findOne({
-        friendly_id: room.name,
+    const listRoomsResult = await this.roomRepository.find({
+      where: {
+        friendly_id: In([...rooms]),
         user_id: user_id,
-      });
-      if (roomCurrent) {
-        await listRoomsResult.push(roomCurrent);
-      }
+      },
     });
 
     return listRoomsResult;
@@ -132,30 +102,38 @@ export class RoomsService {
     return svc.deleteRoom(friendly_id);
   }
 
+  async listParticipantsInRoom(friendly_id: string) {
+    const listParticipants = await this.livekitService
+      .getSVC()
+      .listParticipants(friendly_id);
+
+    const arrIdParticipants = await listParticipants.map(
+      (participant) => participant.identity,
+    );
+
+    return await this.participantRepository.find({
+      where: { room_id: friendly_id, user_id: In(arrIdParticipants) },
+    });
+  }
+
   async reqJoinRoom(reqJoinRoomDto: ReqJoinRoomDto) {
     const svc = await this.livekitService.getSVC();
 
-    const room = await this.roomRepository.findOne({
-      friendly_id: reqJoinRoomDto.friendly_id,
-    });
-
-    if (!room) throw new BadRequestException(`room doesn't exist`);
-
-    const roomOfMaster = await svc.getParticipant(
-      reqJoinRoomDto.friendly_id,
-      room.user_id,
-    );
-    const sidMaster = roomOfMaster.sid;
-
-    // nêu chủ phòng chưa vào thì xử lí tiếp
+    const roomOfMaster = await svc
+      .getParticipant(reqJoinRoomDto.friendly_id, reqJoinRoomDto.user_id)
+      .catch((err) => {
+        throw new Error(err);
+      });
 
     const strData = JSON.stringify({
       type: 'room',
-      data: {
-        message: 'req_join_room',
+      action: 'req-join-room',
+      payload: {
+        message: 'Request join room',
         data: {
-          participant_name: reqJoinRoomDto.user_name,
           participant_id: reqJoinRoomDto.user_id,
+          participant_name: reqJoinRoomDto.user_name,
+          participant_picture: reqJoinRoomDto.user_picture,
         },
       },
     });
@@ -166,21 +144,14 @@ export class RoomsService {
       reqJoinRoomDto.friendly_id,
       data,
       this.livekitService.getDataPacket().RELIABLE,
-      [sidMaster],
+      [roomOfMaster.sid],
     );
 
-    return;
+    return 'OK';
   }
 
   async resJoinRoom(resJoinRoomDto: ResJoinRoomDto) {
     const svc = await this.livekitService.getSVC();
-
-    const master = await this.isRoomMaster({
-      user_id: resJoinRoomDto.user_id,
-      friendly_id: resJoinRoomDto.friendly_id,
-    });
-
-    if (!master) return null;
 
     const participantDetail = await this.userRepository.findOne({
       id: resJoinRoomDto.participant_id,
@@ -192,7 +163,7 @@ export class RoomsService {
     );
     const sidParticipant = roomOfParticipant.sid;
 
-    if (resJoinRoomDto.allow_join) {
+    if (resJoinRoomDto.is_allow) {
       const newParticipant = await this.participantRepository.create({
         user_id: resJoinRoomDto.user_id,
         room_id: resJoinRoomDto.friendly_id,
@@ -200,7 +171,7 @@ export class RoomsService {
       await this.participantRepository.save(newParticipant);
     }
 
-    const dataRes = resJoinRoomDto.allow_join
+    const dataRes = resJoinRoomDto.is_allow
       ? {
           token: await this.createToken({
             user_id: resJoinRoomDto.user_id,
@@ -229,26 +200,4 @@ export class RoomsService {
     );
     return true;
   }
-
-  async getParticipant({
-    friendly_id,
-    user_id,
-  }: {
-    friendly_id: string;
-    user_id: string;
-  }) {
-    const roomLivekit = await this.livekitService
-      .getSVC()
-      .getParticipant(friendly_id, user_id);
-  }
-
-  // async getRoomMaster({
-  //   friendly_id,
-  //   user_id,
-  // }: {
-  //   friendly_id: string;
-  //   user_id: string;
-  // }) {
-  //   return;
-  // }
 }

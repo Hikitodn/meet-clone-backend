@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { User } from 'src/users/entities/user.entity';
@@ -10,7 +10,7 @@ export class AuthService {
     private readonly usersService: UsersService,
   ) {}
 
-  async loginWithGoogle(id_token): Promise<User> {
+  async loginWithGoogle(id_token: string): Promise<User> {
     const res = await this.firebaseService.getAuth().verifyIdToken(id_token);
     return await this.usersService.findByEmailOrCreate({
       name: res.name,
@@ -19,7 +19,9 @@ export class AuthService {
     });
   }
 
-  async validateById(id): Promise<User> {
-    return await this.usersService.findById(id);
+  async validateById(uid: string): Promise<User> {
+    const user = await this.usersService.findById(uid);
+    if (!user) throw new UnauthorizedException('user not found');
+    return user;
   }
 }

@@ -22,7 +22,7 @@ export class ParticipantService {
     return this.participantRepository.find();
   }
 
-  findOne(id: string): Promise<Participant> {
-    return this.participantRepository.findOne(id);
+  async findOne(id: string): Promise<Participant> {
+    return await this.participantRepository.findOne(id);
   }
 }

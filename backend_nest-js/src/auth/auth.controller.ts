@@ -4,12 +4,14 @@ import {
   Post,
   Body,
   Param,
+  Query,
   Req,
   BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request } from 'express';
+import { LoginWithGoogleDto } from './dto/login-with-google.dto';
 
 declare module 'express-session' {
   interface Session {
@@ -21,12 +23,13 @@ declare module 'express-session' {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('/login/google')
+  @Get('/login/google')
   async loginWithGoogle(
-    @Body('id_token') id_token: string,
+    @Query() loginWithGoogleDto: LoginWithGoogleDto,
     @Req() req: Request,
   ) {
-    if (!id_token) throw new BadRequestException('Id token not provided');
+    const { id_token } = loginWithGoogleDto;
+
     const user = await this.authService
       .loginWithGoogle(id_token)
       .catch((err) => {
@@ -34,24 +37,23 @@ export class AuthController {
           'Firebase ID token has invalid signature',
         );
       });
+
     req.session.uid = user.id;
+
     return user;
   }
 
   @Get('/verify')
   async validateById(@Req() req: Request) {
     const uid = req.session.uid;
-    if (!uid) throw new UnauthorizedException('Invalid user');
-    return await this.authService.validateById(uid).catch(() => {
+    return await this.authService.validateById(uid).catch((err) => {
       throw new UnauthorizedException('Invalid user');
     });
   }
 
   @Get('/logout')
   async logout(@Req() req: Request) {
-    req.session.destroy(() => {
-      // nothing to do
-    });
+    req.session.uid = '';
     return 'Logout success';
   }
 }
