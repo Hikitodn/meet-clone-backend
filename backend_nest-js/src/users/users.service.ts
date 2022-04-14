@@ -12,7 +12,7 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     const user = await this.usersRepository.save({
       name: createUserDto.name,
       email: createUserDto.email,
@@ -23,7 +23,7 @@ export class UsersService {
 
   async findByEmailOrCreate(
     findByEmailOrCreateUserDto: FindByEmailOrCreateUserDto,
-  ) {
+  ): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { email: findByEmailOrCreateUserDto.email },
     });
@@ -31,11 +31,11 @@ export class UsersService {
     return await this.usersRepository.save(findByEmailOrCreateUserDto);
   }
 
-  async findById(id: string) {
+  async findById(id: string): Promise<User> {
     return await this.usersRepository.findOne({ where: { id } });
   }
 
-  async findByEmail(email: string) {
+  async findByEmail(email: string): Promise<User> {
     return await this.usersRepository.findOne({ where: { email } });
   }
 }

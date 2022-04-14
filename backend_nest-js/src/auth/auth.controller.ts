@@ -9,7 +9,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginAuthDto } from './dto/login-auth.dto';
 import { Request } from 'express';
 
 declare module 'express-session' {
@@ -24,15 +23,13 @@ export class AuthController {
 
   @Post('/login/google')
   async loginWithGoogle(
-    @Body() loginAuthDto: LoginAuthDto,
+    @Body('id_token') id_token: string,
     @Req() req: Request,
   ) {
-    if (!loginAuthDto.id_token)
-      throw new BadRequestException('Id token not provided');
-
+    if (!id_token) throw new BadRequestException('Id token not provided');
     const user = await this.authService
-      .loginWithGoogle(loginAuthDto)
-      .catch(() => {
+      .loginWithGoogle(id_token)
+      .catch((err) => {
         throw new BadRequestException(
           'Firebase ID token has invalid signature',
         );
@@ -44,9 +41,7 @@ export class AuthController {
   @Get('/verify')
   async validateById(@Req() req: Request) {
     const uid = req.session.uid;
-
     if (!uid) throw new UnauthorizedException('Invalid user');
-
     return await this.authService.validateById(uid).catch(() => {
       throw new UnauthorizedException('Invalid user');
     });
@@ -57,6 +52,6 @@ export class AuthController {
     req.session.destroy(() => {
       // nothing to do
     });
-    return true;
+    return 'Logout success';
   }
 }

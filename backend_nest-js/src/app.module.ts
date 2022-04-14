@@ -5,7 +5,7 @@ import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { RoomsModule } from './rooms/rooms.module';
-import { ParticipantModule } from './participant/participant.module';
+import { ParticipantModule } from './participants/participants.module';
 import { LivekitModule } from './livekit/livekit.module';
 
 @Module({

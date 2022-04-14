@@ -4,10 +4,10 @@ import { RoomsService } from './rooms.service';
 import { RoomsController } from './rooms.controller';
 import { VaidateMiddleware } from '../common/middlewares/validate.middleware';
 import { AuthModule } from '../auth/auth.module';
-import { ParticipantModule } from '../participant/participant.module';
+import { ParticipantModule } from '../participants/participants.module';
 import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
-import { Participant } from '../participant/entities/participant.entity';
+import { Participant } from '../participants/entities/participant.entity';
 import { LivekitModule } from 'src/livekit/livekit.module';
 
 @Module({

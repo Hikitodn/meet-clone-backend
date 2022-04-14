@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ParticipantService } from './participant.service';
+import { ParticipantService } from './participants.service';
 import { Participant } from './entities/participant.entity';
 
 @Module({

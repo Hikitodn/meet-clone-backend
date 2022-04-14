@@ -109,4 +109,9 @@ export class RoomsController {
 
     return this.roomsService.deleteRoom(friendly_id);
   }
+
+  @Get()
+  async reqJoinRoom() {
+    return;
+  }
 }

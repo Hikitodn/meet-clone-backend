@@ -57,7 +57,8 @@ export const reqJoinRoom = async (
 ): Promise<void> => {
   try {
     const { room_id } = req.params;
-    const { user_id, user_name } = req.user;
+    const user_id = req.user.id;
+    const user_name = req.user.name;
 
     if (!room_id)
       throw new APIError(ReasonPhrases.BAD_REQUEST, StatusCodes.BAD_REQUEST);
@@ -77,17 +78,17 @@ export const resJoinRoom = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const roomMasterId = req.user.uid;
+    const user_id = req.user.id;
     const roomId = req.body.roomName;
     const participantId = req.body.participantId;
     const isAllow = req.body.isAllow;
 
-    if (!roomMasterId || !roomId || !participantId || !isAllow)
+    if (!user_id || !roomId || !participantId || !isAllow)
       throw new APIError(ReasonPhrases.BAD_REQUEST, StatusCodes.BAD_REQUEST);
 
     const result = await roomService.resJoinRoom(
       roomId,
-      roomMasterId,
+      user_id,
       participantId,
       isAllow
     );

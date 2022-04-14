@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { UpdateAuthDto } from './dto/update-auth.dto';
 import { UsersService } from '../users/users.service';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -10,11 +10,8 @@ export class AuthService {
     private readonly usersService: UsersService,
   ) {}
 
-  async loginWithGoogle(loginAuthDto: UpdateAuthDto) {
-    const res = await this.firebaseService
-      .getAuth()
-      .verifyIdToken(loginAuthDto.id_token);
-
+  async loginWithGoogle(id_token): Promise<User> {
+    const res = await this.firebaseService.getAuth().verifyIdToken(id_token);
     return await this.usersService.findByEmailOrCreate({
       name: res.name,
       email: res.email,
@@ -22,7 +19,7 @@ export class AuthService {
     });
   }
 
-  async validateById(id) {
+  async validateById(id): Promise<User> {
     return await this.usersService.findById(id);
   }
 }

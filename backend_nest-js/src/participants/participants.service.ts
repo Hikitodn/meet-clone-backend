@@ -11,18 +11,18 @@ export class ParticipantService {
     private readonly participantRepository: Repository<Participant>,
   ) {}
 
-  create(createParticipantDto: CreateParticipantDto) {
+  create(createParticipantDto: CreateParticipantDto): Promise<Participant> {
     return this.participantRepository.save({
       user_id: createParticipantDto.user_id,
       room_id: createParticipantDto.room_id,
     });
   }
 
-  findAll() {
+  findAll(): Promise<Participant[]> {
     return this.participantRepository.find();
   }
 
-  findOne(id: number) {
-    return this.participantRepository.findOne({ where: { id } });
+  findOne(id: string): Promise<Participant> {
+    return this.participantRepository.findOne(id);
   }
 }
