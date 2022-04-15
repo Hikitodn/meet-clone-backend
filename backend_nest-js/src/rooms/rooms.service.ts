@@ -31,7 +31,10 @@ export class RoomsService {
   ) {}
 
   public makeFrendlyId() {
-    const arr = Math.random().toString(36).substring(2, 13).split('');
+    const str =
+      Math.random().toString(36).substring(2, 9) +
+      Math.random().toString(36).substring(2, 9);
+    const arr = str.substring(2, 13).split('');
     arr[3] = '-';
     arr[7] = '-';
     return arr.join('');
@@ -74,7 +77,7 @@ export class RoomsService {
     });
 
     at.addGrant({
-      roomJoin: createTokenDto.allow_join || false,
+      roomJoin: createTokenDto.room_join,
       room: createTokenDto.friendly_id,
     });
 
@@ -131,7 +134,7 @@ export class RoomsService {
       payload: {
         message: 'Request join room',
         data: {
-          participant_id: reqJoinRoomDto.user_id,
+          participant_id: reqJoinRoomDto.participant_id,
           participant_name: reqJoinRoomDto.user_name,
           participant_picture: reqJoinRoomDto.user_picture,
         },
@@ -153,43 +156,32 @@ export class RoomsService {
   async resJoinRoom(resJoinRoomDto: ResJoinRoomDto) {
     const svc = await this.livekitService.getSVC();
 
-    const participantDetail = await this.userRepository.findOne({
-      id: resJoinRoomDto.participant_id,
-    });
-
     const roomOfParticipant = await svc.getParticipant(
       resJoinRoomDto.friendly_id,
       resJoinRoomDto.participant_id,
     );
+
     const sidParticipant = roomOfParticipant.sid;
 
     if (resJoinRoomDto.is_allow) {
       const newParticipant = await this.participantRepository.create({
-        user_id: resJoinRoomDto.user_id,
+        user_id: resJoinRoomDto.participant_id,
         room_id: resJoinRoomDto.friendly_id,
       });
       await this.participantRepository.save(newParticipant);
     }
 
-    const dataRes = resJoinRoomDto.is_allow
-      ? {
-          token: await this.createToken({
-            user_id: resJoinRoomDto.user_id,
-            user_name: participantDetail.name,
-            friendly_id: resJoinRoomDto.friendly_id,
-            allow_join: true,
-          }),
-          isAllow: true,
-        }
-      : { isAllow: false };
-
     const strData = JSON.stringify({
       type: 'room',
-      data: {
-        message: 'res_join_room',
-        data: dataRes,
+      action: 'res-join-room',
+      payload: {
+        message: 'Response join room',
+        data: {
+          is_allow: resJoinRoomDto.is_allow,
+        },
       },
     });
+
     const encoder = new TextEncoder();
     const data = encoder.encode(strData);
     await svc.sendData(

@@ -53,17 +53,15 @@ export class RoomsController {
     const options = {
       user_id: user.id,
       user_name: user.name,
-      friendly_id: friendly_id,
-      allow_join: false,
+      friendly_id: room.friendly_id,
+      room_join: true,
     };
 
     if (user.id == room.user_id) {
-      options.allow_join = true;
     } else {
       const participant = await this.participantService.findOne(user.id);
-
-      if (participant) {
-        options.allow_join = true;
+      if (!participant) {
+        options.friendly_id = user.id;
       }
     }
 
@@ -119,8 +117,9 @@ export class RoomsController {
 
     const result = await this.roomsService
       .reqJoinRoom({
-        user_id: room.id,
+        user_id: room.user_id,
         user_name: user.name,
+        participant_id: user.id,
         friendly_id: room.friendly_id,
         user_picture: user.picture,
       })
@@ -146,21 +145,20 @@ export class RoomsController {
   ) {
     const room = await this.roomsService.getRoom(friendly_id);
 
-    resJoinRoomDto.is_allow =
-      resJoinRoomDto.is_allow === 'true' ? 'true' : 'false';
-
-    console.log(resJoinRoomDto.is_allow);
-
     if (room.user_id != user.id)
       throw new UnauthorizedException('unauthorized');
 
-    const res = await this.roomsService.resJoinRoom({
-      user_id: user.id,
-      friendly_id: room.friendly_id,
+    console.log(room);
+
+    resJoinRoomDto.is_allow =
+      resJoinRoomDto.is_allow == 'true' ? 'true' : 'false';
+
+    await this.roomsService.resJoinRoom({
+      friendly_id: resJoinRoomDto.participant_id,
       participant_id: resJoinRoomDto.participant_id,
       is_allow: resJoinRoomDto.is_allow,
     });
 
-    return res;
+    return 'Response success';
   }
 }
