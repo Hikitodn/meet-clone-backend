@@ -1,5 +1,6 @@
 //Import package
 import {
+  NotFoundException,
   Injectable,
   BadRequestException,
   UnauthorizedException,
@@ -23,8 +24,6 @@ export class RoomsService {
   constructor(
     @InjectRepository(Room)
     private readonly roomRepository: Repository<Room>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
     @InjectRepository(Participant)
     private readonly participantRepository: Repository<Participant>,
     private readonly livekitService: LivekitService,
@@ -156,22 +155,31 @@ export class RoomsService {
   async resJoinRoom(resJoinRoomDto: ResJoinRoomDto) {
     const svc = await this.livekitService.getSVC();
 
-    const roomOfParticipant = await svc.getParticipant(
-      resJoinRoomDto.friendly_id,
-      resJoinRoomDto.participant_id,
-    );
-
-    const sidParticipant = roomOfParticipant.sid;
+    const roomOfParticipant = await svc
+      .getParticipant(
+        resJoinRoomDto.participant_id,
+        resJoinRoomDto.participant_id,
+      )
+      .catch((err) => {
+        throw new NotFoundException('Could not find participant');
+      });
 
     if (resJoinRoomDto.is_allow) {
-      const newParticipant = await this.participantRepository.create({
+      const participant = await this.participantRepository.findOne({
         user_id: resJoinRoomDto.participant_id,
         room_id: resJoinRoomDto.friendly_id,
       });
-      await this.participantRepository.save(newParticipant);
+
+      if (!participant) {
+        const newParticipant = await this.participantRepository.create({
+          user_id: resJoinRoomDto.participant_id,
+          room_id: resJoinRoomDto.friendly_id,
+        });
+        await this.participantRepository.save(newParticipant);
+      }
     }
 
-    const strData = JSON.stringify({
+    const strData = await JSON.stringify({
       type: 'room',
       action: 'res-join-room',
       payload: {
@@ -182,14 +190,18 @@ export class RoomsService {
       },
     });
 
-    const encoder = new TextEncoder();
-    const data = encoder.encode(strData);
-    await svc.sendData(
-      resJoinRoomDto.friendly_id,
-      data,
-      this.livekitService.getDataPacket().RELIABLE,
-      [sidParticipant],
-    );
+    const encoder = await new TextEncoder();
+    const data = await encoder.encode(strData);
+    await svc
+      .sendData(
+        resJoinRoomDto.participant_id,
+        data,
+        this.livekitService.getDataPacket().RELIABLE,
+        [roomOfParticipant.sid],
+      )
+      .catch((err) => {
+        throw new BadRequestException('Unable to contact paricipant');
+      });
     return true;
   }
 }

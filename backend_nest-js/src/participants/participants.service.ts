@@ -25,4 +25,19 @@ export class ParticipantService {
   async findOne(id: string): Promise<Participant> {
     return await this.participantRepository.findOne(id);
   }
+
+  async findWhere(where: {
+    user_id: string;
+    room_id: string;
+  }): Promise<Participant> {
+    return await this.participantRepository.findOne({
+      where: where,
+    });
+  }
+
+  async findByUserId(user_id: string): Promise<Participant> {
+    return await this.participantRepository.findOne({
+      where: { user_id: user_id },
+    });
+  }
 }

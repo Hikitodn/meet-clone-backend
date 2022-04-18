@@ -1,12 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-// import * as cookieParser from 'cookie-parser';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as session from 'express-session';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // app.use(cookieParser());
   app.use(
     session({
       name: process.env.SESSION_NAME || 'sid',
@@ -21,11 +20,16 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-    credentials: true,
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-  });
+  const config = new DocumentBuilder()
+    .setTitle('Meet Clone Api')
+    .setDescription('Meet Clone Api')
+    .setVersion('1.0')
+    .addTag('Meet Clone Api')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+
+  app.enableCors();
 
   app.useGlobalPipes(new ValidationPipe());
 

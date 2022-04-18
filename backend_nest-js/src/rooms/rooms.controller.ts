@@ -59,7 +59,11 @@ export class RoomsController {
 
     if (user.id == room.user_id) {
     } else {
-      const participant = await this.participantService.findOne(user.id);
+      const participant = await this.participantService.findWhere({
+        user_id: user.id,
+        room_id: friendly_id,
+      });
+
       if (!participant) {
         options.friendly_id = user.id;
       }
@@ -103,8 +107,10 @@ export class RoomsController {
   ) {
     const room = await this.roomsService.getRoom(friendly_id);
 
+    if (!room) throw new BadRequestException('Room not found');
+
     if (room.user_id != user.id)
-      throw new UnauthorizedException('unauthorized');
+      throw new UnauthorizedException('Unauthorized');
 
     return this.roomsService.listParticipantsInRoom(friendly_id);
   }
@@ -146,15 +152,13 @@ export class RoomsController {
     const room = await this.roomsService.getRoom(friendly_id);
 
     if (room.user_id != user.id)
-      throw new UnauthorizedException('unauthorized');
-
-    console.log(room);
+      throw new UnauthorizedException('Unauthorized');
 
     resJoinRoomDto.is_allow =
       resJoinRoomDto.is_allow == 'true' ? 'true' : 'false';
 
     await this.roomsService.resJoinRoom({
-      friendly_id: resJoinRoomDto.participant_id,
+      friendly_id: friendly_id,
       participant_id: resJoinRoomDto.participant_id,
       is_allow: resJoinRoomDto.is_allow,
     });
