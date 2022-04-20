@@ -19,16 +19,16 @@ import { User } from '../users/entities/user.entity';
 //Import services
 import { LivekitService } from '../livekit/livekit.service';
 import { ParticipantsService } from '../participants/participants.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class RoomsService {
   constructor(
     @InjectRepository(Room)
     private readonly roomRepository: Repository<Room>,
-    @InjectRepository(Participant)
-    private readonly participantsRepository: Repository<Participant>,
     private readonly livekitService: LivekitService,
     private readonly participantsService: ParticipantsService,
+    private readonly usersService: UsersService,
   ) {}
 
   public makeFrendlyId() {
@@ -106,7 +106,7 @@ export class RoomsService {
     return svc.deleteRoom(friendly_id);
   }
 
-  async listParticipantsInRoom(friendly_id: string) {
+  async listParticipantsInRoom(friendly_id) {
     const listParticipants = await this.livekitService
       .getSVC()
       .listParticipants(friendly_id);
@@ -115,8 +115,8 @@ export class RoomsService {
       (participant) => participant.identity,
     );
 
-    return await this.participantsService.findOneOptions({
-      where: { room_id: friendly_id, user_id: In(arrIdParticipants) },
+    return this.usersService.findManyOptions({
+      where: { id: In(arrIdParticipants) },
     });
   }
 

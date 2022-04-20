@@ -19,6 +19,7 @@ import { ResJoinRoomDto } from './dto/res-join-room.dto';
 //Import services
 import { RoomsService } from './rooms.service';
 import { ParticipantsService } from '../participants/participants.service';
+import { UsersService } from '../users/users.service';
 //Import decorators
 import { User } from 'src/common/decorators/user.decorator';
 
@@ -27,6 +28,7 @@ export class RoomsController {
   constructor(
     private readonly roomsService: RoomsService,
     private readonly participantsService: ParticipantsService,
+    private readonly usersService: UsersService,
   ) {}
 
   // Create a room
@@ -111,10 +113,17 @@ export class RoomsController {
 
     if (!room) throw new BadRequestException('Room not found');
 
-    if (room.user_id != user.id)
-      throw new UnauthorizedException('Unauthorized');
+    // if (room.user_id != user.id)
+    //   throw new UnauthorizedException('Unauthorized');
 
-    return this.roomsService.listParticipantsInRoom(friendly_id);
+    const participants = await this.roomsService.listParticipantsInRoom(
+      friendly_id,
+    );
+
+    return participants.map((participant) => ({
+      name: participant.name,
+      picture: participant.picture,
+    }));
   }
 
   // req to join room

@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, FindOneOptions, FindManyOptions } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FindByEmailOrCreateUserDto } from './dto/find-by-email-or-create-user.dto';
@@ -25,7 +25,7 @@ export class UsersService {
     findByEmailOrCreateUserDto: FindByEmailOrCreateUserDto,
   ): Promise<User> {
     const user = await this.usersRepository.findOne({
-      where: { email: findByEmailOrCreateUserDto.email },
+      email: findByEmailOrCreateUserDto.email,
     });
     if (user) return user;
     return await this.usersRepository.save(findByEmailOrCreateUserDto);
@@ -36,6 +36,14 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<User> {
-    return await this.usersRepository.findOne({ where: { email } });
+    return await this.usersRepository.findOne({ email });
+  }
+
+  async findOneOptions(options: FindOneOptions) {
+    return await this.usersRepository.findOne(options);
+  }
+
+  async findManyOptions(options: FindManyOptions) {
+    return await this.usersRepository.find(options);
   }
 }

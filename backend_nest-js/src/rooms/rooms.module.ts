@@ -9,9 +9,11 @@ import { Room } from './entities/room.entity';
 import { User } from '../users/entities/user.entity';
 import { Participant } from '../participants/entities/participant.entity';
 import { LivekitModule } from 'src/livekit/livekit.module';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
+    UsersModule,
     LivekitModule,
     AuthModule,
     ParticipantModule,
