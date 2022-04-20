@@ -18,6 +18,7 @@ import { Participant } from '../participants/entities/participant.entity';
 import { User } from '../users/entities/user.entity';
 //Import services
 import { LivekitService } from '../livekit/livekit.service';
+import { ParticipantsService } from '../participants/participants.service';
 
 @Injectable()
 export class RoomsService {
@@ -25,8 +26,9 @@ export class RoomsService {
     @InjectRepository(Room)
     private readonly roomRepository: Repository<Room>,
     @InjectRepository(Participant)
-    private readonly participantRepository: Repository<Participant>,
+    private readonly participantsRepository: Repository<Participant>,
     private readonly livekitService: LivekitService,
+    private readonly participantsService: ParticipantsService,
   ) {}
 
   public makeFrendlyId() {
@@ -113,7 +115,7 @@ export class RoomsService {
       (participant) => participant.identity,
     );
 
-    return await this.participantRepository.find({
+    return await this.participantsService.findOneOptions({
       where: { room_id: friendly_id, user_id: In(arrIdParticipants) },
     });
   }
@@ -165,17 +167,18 @@ export class RoomsService {
       });
 
     if (resJoinRoomDto.is_allow) {
-      const participant = await this.participantRepository.findOne({
-        user_id: resJoinRoomDto.participant_id,
-        room_id: resJoinRoomDto.friendly_id,
+      const participant = await this.participantsService.findOneOptions({
+        where: {
+          user_id: resJoinRoomDto.participant_id,
+          room_id: resJoinRoomDto.friendly_id,
+        },
       });
 
       if (!participant) {
-        const newParticipant = await this.participantRepository.create({
+        const newParticipant = await this.participantsService.create({
           user_id: resJoinRoomDto.participant_id,
           room_id: resJoinRoomDto.friendly_id,
         });
-        await this.participantRepository.save(newParticipant);
       }
     }
 

@@ -18,7 +18,7 @@ import { CreateRoomDto } from './dto/create-room.dto';
 import { ResJoinRoomDto } from './dto/res-join-room.dto';
 //Import services
 import { RoomsService } from './rooms.service';
-import { ParticipantService } from '../participants/participants.service';
+import { ParticipantsService } from '../participants/participants.service';
 //Import decorators
 import { User } from 'src/common/decorators/user.decorator';
 
@@ -26,7 +26,7 @@ import { User } from 'src/common/decorators/user.decorator';
 export class RoomsController {
   constructor(
     private readonly roomsService: RoomsService,
-    private readonly participantService: ParticipantService,
+    private readonly participantsService: ParticipantsService,
   ) {}
 
   // Create a room
@@ -59,9 +59,11 @@ export class RoomsController {
 
     if (user.id == room.user_id) {
     } else {
-      const participant = await this.participantService.findWhere({
-        user_id: user.id,
-        room_id: friendly_id,
+      const participant = await this.participantsService.findOneOptions({
+        where: {
+          user_id: user.id,
+          room_id: friendly_id,
+        },
       });
 
       if (!participant) {
@@ -81,7 +83,7 @@ export class RoomsController {
       return { ...room, is_master: true };
     }
 
-    const participant = await this.participantService.findOne(user.id);
+    const participant = await this.participantsService.findOne(user.id);
 
     return {
       room_name: room.room_name,
