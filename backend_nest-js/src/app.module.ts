@@ -7,6 +7,8 @@ import { AuthModule } from './auth/auth.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { ParticipantModule } from './participants/participants.module';
 import { LivekitModule } from './livekit/livekit.module';
+import { GuestsModule } from './guests/guests.module';
+import { RoomSchedulesModule } from './room-schedules/room-schedules.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { LivekitModule } from './livekit/livekit.module';
     RoomsModule,
     ParticipantModule,
     LivekitModule,
+    GuestsModule,
+    RoomSchedulesModule,
   ],
   controllers: [],
   providers: [],

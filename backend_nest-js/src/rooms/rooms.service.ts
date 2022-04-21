@@ -46,8 +46,7 @@ export class RoomsService {
       user_id: createRoomDto.user_id,
       room_name: createRoomDto.room_name,
       friendly_id: createRoomDto.friendly_id,
-      created_at: createRoomDto.created_at,
-      updated_at: createRoomDto.updated_at,
+      display_mode: createRoomDto.display_mode,
     });
 
     await this.livekitService.getSVC().createRoom({

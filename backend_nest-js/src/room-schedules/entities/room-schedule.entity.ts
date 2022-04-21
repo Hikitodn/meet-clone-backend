@@ -7,23 +7,24 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class Room {
-  @PrimaryGeneratedColumn('uuid')
+export class RoomSchedule {
+  @PrimaryGeneratedColumn('increment')
   id: string;
 
   @Column()
-  room_name: string;
+  room_id: string;
+
+  @Column('timestamp without time zone')
+  advance_notice: Date;
 
   @Column()
-  user_id: string;
+  start_date: Date;
 
-  @Column({ nullable: false })
-  friendly_id: string;
+  @Column()
+  end_date: Date;
 
-  @Column({
-    nullable: false,
-  })
-  display_mode: string;
+  @Column()
+  description: string;
 
   @CreateDateColumn({
     type: 'timestamp without time zone',

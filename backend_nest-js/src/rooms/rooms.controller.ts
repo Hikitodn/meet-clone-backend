@@ -15,11 +15,12 @@ import {
 import { Request } from 'express';
 //Import dto
 import { CreateRoomDto } from './dto/create-room.dto';
+import { CreateTokenDto } from './dto/create-token.dto';
+import { ReqJoinRoomDto } from './dto/req-join-room.dto';
 import { ResJoinRoomDto } from './dto/res-join-room.dto';
 //Import services
 import { RoomsService } from './rooms.service';
 import { ParticipantsService } from '../participants/participants.service';
-import { UsersService } from '../users/users.service';
 //Import decorators
 import { User } from 'src/common/decorators/user.decorator';
 
@@ -28,7 +29,6 @@ export class RoomsController {
   constructor(
     private readonly roomsService: RoomsService,
     private readonly participantsService: ParticipantsService,
-    private readonly usersService: UsersService,
   ) {}
 
   // Create a room
@@ -52,12 +52,12 @@ export class RoomsController {
 
     if (!room) throw new BadRequestException('Room not found');
 
-    const options = {
+    const dto = new CreateTokenDto({
       user_id: user.id,
       user_name: user.name,
       friendly_id: room.friendly_id,
       room_join: true,
-    };
+    });
 
     if (user.id == room.user_id) {
     } else {
@@ -69,11 +69,11 @@ export class RoomsController {
       });
 
       if (!participant) {
-        options.friendly_id = user.id;
+        dto.friendly_id = user.id;
       }
     }
 
-    return this.roomsService.createToken(options);
+    return this.roomsService.createToken(dto);
   }
 
   // get a room
@@ -85,7 +85,11 @@ export class RoomsController {
       return { ...room, is_master: true };
     }
 
-    const participant = await this.participantsService.findOne(user.id);
+    const participant = await this.participantsService.findOneOptions({
+      where: {
+        user_id: user.id,
+      },
+    });
 
     return {
       room_name: room.room_name,

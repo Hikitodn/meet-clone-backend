@@ -6,18 +6,20 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity()
-export class Participant {
-  @PrimaryGeneratedColumn('uuid')
+@Entity('guest')
+export class Guest {
+  @PrimaryGeneratedColumn('increment')
   id: string;
-
-  @Column()
-  user_id: string;
 
   @Column()
   room_id: string;
 
-  @CreateDateColumn({ type: 'timestamp without time zone' })
+  @Column()
+  email: string;
+
+  @CreateDateColumn({
+    type: 'timestamp without time zone',
+  })
   created_at: Date;
 
   @UpdateDateColumn({
