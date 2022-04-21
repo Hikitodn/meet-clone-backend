@@ -92,6 +92,7 @@ export class RoomsController {
     });
 
     return {
+      user_id: room.user_id,
       room_name: room.room_name,
       friendly_id: room.friendly_id,
       is_participant: participant ? true : false,
@@ -125,6 +126,7 @@ export class RoomsController {
     );
 
     return participants.map((participant) => ({
+      id: participant.id,
       name: participant.name,
       picture: participant.picture,
     }));

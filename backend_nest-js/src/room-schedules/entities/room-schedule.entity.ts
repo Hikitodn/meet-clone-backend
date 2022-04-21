@@ -17,10 +17,10 @@ export class RoomSchedule {
   @Column('timestamp without time zone')
   advance_notice: Date;
 
-  @Column()
+  @Column({ type: 'timestamp without time zone', nullable: false })
   start_date: Date;
 
-  @Column()
+  @Column({ type: 'timestamp without time zone', nullable: false })
   end_date: Date;
 
   @Column()
