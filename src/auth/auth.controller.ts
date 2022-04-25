@@ -12,12 +12,7 @@ import {
 import { AuthService } from './auth.service';
 import { Request } from 'express';
 import { LoginWithGoogleDto } from './dto/login-with-google.dto';
-
-declare module 'express-session' {
-  interface Session {
-    uid: string;
-  }
-}
+import * as _ from 'lodash';
 
 @Controller('auth')
 export class AuthController {
@@ -38,14 +33,14 @@ export class AuthController {
         );
       });
 
-    req.session.uid = user.id;
+    _.set(req, 'session.uid', user.id);
 
     return user;
   }
 
   @Get('/verify')
   async validateById(@Req() req: Request) {
-    const uid = req.session.uid;
+    const uid = _.get(req, 'session.uid');
     return await this.authService.validateById(uid).catch((err) => {
       throw new UnauthorizedException('Invalid user');
     });
@@ -53,7 +48,7 @@ export class AuthController {
 
   @Get('/logout')
   async logout(@Req() req: Request) {
-    req.session.uid = '';
+    _.set(req, 'session', '');
     return 'Logout success';
   }
 }
