@@ -93,9 +93,7 @@ export class RoomsController {
     });
 
     return {
-      user_id: room.user_id,
-      room_name: room.room_name,
-      friendly_id: room.friendly_id,
+      ...room,
       is_participant: participant ? true : false,
     };
   }

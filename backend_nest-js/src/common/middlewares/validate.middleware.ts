@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../../auth/auth.service';
+import * as _ from 'lodash';
 
 @Injectable()
 export class VaidateMiddleware implements NestMiddleware {
@@ -17,12 +18,12 @@ export class VaidateMiddleware implements NestMiddleware {
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
-    const { uid } = req.session;
+    const uid = _.get(req, 'session.uid');
     if (!uid) throw new UnauthorizedException('not logged in');
     const user = await this.authService.validateById(uid).catch(() => {
       throw new UnauthorizedException('invalid user');
     });
-    req.user = user;
+    _.set(req, 'user', user);
     next();
   }
 }

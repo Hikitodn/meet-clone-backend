@@ -1,14 +1,9 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-
-declare module 'express' {
-  interface Request {
-    user: any;
-  }
-}
+import * as _ from 'lodash';
 
 export const User = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();
-    return request.user;
+    const req = ctx.switchToHttp().getRequest();
+    return _.get(req, 'user');
   },
 );
