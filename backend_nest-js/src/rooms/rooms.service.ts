@@ -30,6 +30,9 @@ export class RoomsService {
     private readonly participantsService: ParticipantsService,
     private readonly usersService: UsersService,
   ) {}
+  async remove(id: string) {
+    return this.roomRepository.delete(id);
+  }
 
   public makeFrendlyId() {
     const str =

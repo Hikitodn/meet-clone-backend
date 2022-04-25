@@ -87,6 +87,7 @@ export class RoomsController {
 
     const participant = await this.participantsService.findOneOptions({
       where: {
+        room_id: room.friendly_id,
         user_id: user.id,
       },
     });
@@ -105,7 +106,9 @@ export class RoomsController {
     @Param('friendly_id') friendly_id: string,
     @Req() req: Request,
   ) {
-    return;
+    const room = await this.roomsService.getRoom(friendly_id);
+    if (!room) throw new BadRequestException('Room not found');
+    return this.roomsService.remove(room.id);
   }
 
   // get list participants in room
