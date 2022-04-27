@@ -40,14 +40,14 @@ services:
       - db
       - livekit
 
-  caddy:
-    image: livekit/caddyl4
-    command: run --config /etc/caddy.yaml --adapter yaml
-    restart: unless-stopped
-    network_mode: "host"
-    volumes:
-      - ./livekit/caddy.yaml:/etc/caddy.yaml
-      - ./livekit/caddy_data:/data
+  # caddy:
+  #   image: livekit/caddyl4
+  #   command: run --config /etc/caddy.yaml --adapter yaml
+  #   restart: unless-stopped
+  #   network_mode: "host"
+  #   volumes:
+  #     - ./livekit/caddy.yaml:/etc/caddy.yaml
+  #     - ./livekit/caddy_data:/data
 
   livekit:
     container_name: livekit
